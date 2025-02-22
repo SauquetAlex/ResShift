@@ -35,6 +35,8 @@ import torchvision.utils as vutils
 # from torch.utils.tensorboard import SummaryWriter
 from torch.nn.parallel import DistributedDataParallel as DDP
 
+from tqdm import tqdm
+
 
 class TrainerBase:
     def __init__(self, configs):
@@ -481,8 +483,8 @@ class TrainerDifIR(TrainerBase):
         else:
             self.autoencoder = None
 
-        if self.configs.autoencoder.params.lora_tune_decoder or self.configs.autoencoder.tune_decoder:
-            self.freeze_model(self.model)
+        # if self.configs.autoencoder.params.lora_tune_decoder or self.configs.autoencoder.tune_decoder:
+        #     self.freeze_model(self.model)
 
         # LPIPS metric
         if hasattr(self.configs, 'lpips'):
@@ -743,7 +745,7 @@ class TrainerDifIR(TrainerBase):
         micro_batchsize = self.configs.train.microbatch
         num_grad_accumulate = math.ceil(current_batchsize / micro_batchsize)
 
-        for jj in range(0, current_batchsize, micro_batchsize):
+        for jj in tqdm(range(0, current_batchsize, micro_batchsize), desc="training step"):
             micro_data = {key:value[jj:jj+micro_batchsize,] for key, value in data.items()}
             last_batch = (jj+micro_batchsize >= current_batchsize)
             tt = torch.randint(

@@ -123,7 +123,7 @@ def get_configs(args):
         vqgan_path = ckpt_dir / f'ffhq512_vq_f8_dim8_face.pth'
     elif args.task == 'deblur':
         configs = OmegaConf.load('./configs/deblur_gopro256.yaml')
-        assert args.scale == 1, 'Please set scale equals 1 for deblurring!'
+        # assert args.scale == 1, 'Please set scale equals 1 for deblurring!'
         ckpt_url = _LINK[args.task]
         ckpt_path = ckpt_dir / f'resshift_{args.task}_s{_STEP[args.task]}.pth'
         vqgan_url = _LINK['vqgan']

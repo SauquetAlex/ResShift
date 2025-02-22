@@ -1,31 +1,41 @@
 trainer:
   target: trainer.TrainerDifIRLPIPS
-
 model:
   target: models.unet.UNetModelSwin
-  ckpt_path: ~
+  ckpt_path: null
   params:
     image_size: 64
     in_channels: 3
-    model_channels: 160  # 160
+    model_channels: 160
     out_channels: 3
-    attention_resolutions: [64,32,16,8]
+    attention_resolutions:
+    - 64
+    - 32
+    - 16
+    - 8
     dropout: 0
-    channel_mult: [1, 2, 2, 4]   # 1224
-    num_res_blocks: [2, 2, 2, 2]
-    conv_resample: True
+    channel_mult:
+    - 1
+    - 2
+    - 2
+    - 4
+    num_res_blocks:
+    - 2
+    - 2
+    - 2
+    - 2
+    conv_resample: true
     dims: 2
-    use_fp16: False
+    use_fp16: false
     num_head_channels: 32
-    use_scale_shift_norm: True
-    resblock_updown: False
+    use_scale_shift_norm: true
+    resblock_updown: false
     swin_depth: 2
     swin_embed_dim: 192
     window_size: 8
     mlp_ratio: 4
-    cond_lq: True
+    cond_lq: true
     lq_size: 256
-
 diffusion:
   target: models.script_util.create_gaussian_diffusion
   params:
@@ -37,22 +47,21 @@ diffusion:
     steps: 4
     min_noise_level: 0.2
     kappa: 2.0
-    weighted_mse: False
+    weighted_mse: false
     predict_type: xstart
-    timestep_respacing: ~
+    timestep_respacing: null
     scale_factor: 1.0
-    normalize_input: True
-    latent_flag: True
-
+    normalize_input: true
+    latent_flag: true
 autoencoder:
   target: ldm.models.autoencoder.VQModelTorch
   ckpt_path: C:\Users\sauqu\Documents\Hackathon\boilermake12\ResShift\weights\autoencoder_vq_f4.pth
-  tune_decoder: False
+  tune_decoder: false
   params:
     embed_dim: 3
     n_embed: 8192
     ddconfig:
-      double_z: False
+      double_z: false
       z_channels: 3
       resolution: 256
       in_channels: 3
@@ -66,10 +75,8 @@ autoencoder:
       attn_resolutions: []
       dropout: 0.0
       padding_mode: zeros
-
 lpips:
   net: alex
-
 data:
   train:
     type: paired
@@ -78,63 +85,70 @@ data:
       dir_path_extra: C:\Users\sauqu\Documents\Hackathon\boilermake12\train\gt
       transform_type: rcrop_aug_norm
       transform_kwargs:
-        pass_aug: False
+        pass_aug: false
         pch_size: 256
         mean: 0.5
         std: 0.5
         max_value: 255
       im_exts: png
-      length: ~
-      recursive: False
+      length: null
+      recursive: false
   val:
     type: paired
     params:
       dir_path: C:\Users\sauqu\Documents\Hackathon\boilermake12\test\lq
       dir_path_extra: C:\Users\sauqu\Documents\Hackathon\boilermake12\train\gt
       transform_type: default
-      transform_kwargs: 
-        pass_aug: True
+      transform_kwargs:
+        pass_aug: true
         pch_size: 256
         mean: ${data.train.params.transform_kwargs.mean}
         std: ${data.train.params.transform_kwargs.std}
         max_value: ${data.train.params.transform_kwargs.max_value}
       im_exts: png
       length: 32
-      recursive: False
-
+      recursive: false
 train:
-  # learning rate
-  lr: 5e-5                      # learning rate 
-  lr_min: 2e-5                      # learning rate 
+  lr: 5.0e-05
+  lr_min: 2.0e-05
   lr_schedule: cosin
   warmup_iterations: 5000
-  # dataloader
-  batch: [8, 4]                
-  microbatch: 2
+  batch:
+  - 64
+  - 4
+  microbatch: 8
   num_workers: 4
-  prefetch_factor: 2            
-  # optimization settings
-  weight_decay: 0               
+  prefetch_factor: 2
+  weight_decay: 0
   ema_rate: 0.999
-  iterations: 300000            # total iterations
-  # save logging
+  iterations: 300000
   save_freq: 10000
-  log_freq: [500, 5000, 4]     # [training loss, training images, val images]
-  loss_coef: [1.0, 4.0, 0.0]    # [latent-mse, pixel-lpips, pixel-mse]
-  local_logging: True           # manually save images
-  tf_logging: False             # tensorboard logging
-  # validation settings
-  use_ema_val: True            
+  log_freq:
+  - 500
+  - 5000
+  - 4
+  loss_coef:
+  - 1.0
+  - 4.0
+  - 0.0
+  local_logging: true
+  tf_logging: false
+  use_ema_val: true
   val_freq: ${train.save_freq}
-  val_y_channel: True
+  val_y_channel: true
   val_resolution: ${model.params.lq_size}
   val_padding_mode: reflect
-  # training setting
-  use_amp: True                # amp training
-  seed: 123456                 # random seed
-  global_seeding: False
-  # model compile
+  use_amp: true
+  seed: 123456
+  global_seeding: false
   compile:
-    flag: False
-    mode: reduce-overhead      # default, reduce-overhead
+    flag: false
+    mode: reduce-overhead
+save_dir: C:/Users/sauqu/Documents/Hackathon/boilermake12/ResShift/weights
+resume: ''
+cfg_path: configs/deblur_gopro256.yaml
 
+Number of parameters: 118.71M
+Restoring autoencoder from C:\Users\sauqu\Documents\Hackathon\boilermake12\ResShift\weights\autoencoder_vq_f4.pth
+Loading autoencoder from C:\Users\sauqu\Documents\Hackathon\boilermake12\ResShift\weights\autoencoder_vq_f4.pth...
+Loaded Done
